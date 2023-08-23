@@ -345,7 +345,7 @@ void ComputeORB(const cv::Mat &img, vector<cv::KeyPoint> &keypoints, vector<Desc
   const int half_boundary = 16;
   int bad_points = 0;
   for (auto &kp: keypoints) {
-    if (kp.pt.x < half_boundary || kp.pt.y < half_boundary ||
+    if (kp.pt.x < half_boundary || kp.pt.y < half_boundary || 
         kp.pt.x >= img.cols - half_boundary || kp.pt.y >= img.rows - half_boundary) {
       // outside
       bad_points++;
