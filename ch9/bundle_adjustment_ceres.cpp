@@ -1,5 +1,6 @@
 #include <iostream>
 #include <ceres/ceres.h>
+
 #include "common.h"
 #include "SnavelyReprojectionError.h"
 
@@ -7,7 +8,8 @@ using namespace std;
 
 void SolveBA(BALProblem &bal_problem);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     if (argc != 2) {
         cout << "usage: bundle_adjustment_ceres bal_data.txt" << endl;
         return 1;
@@ -35,7 +37,8 @@ void SolveBA(BALProblem &bal_problem) {
     const double *observations = bal_problem.observations();
     ceres::Problem problem;
 
-    for (int i = 0; i < bal_problem.num_observations(); ++i) {
+    for (int i = 0; i < bal_problem.num_observations(); ++i)
+    {
         ceres::CostFunction *cost_function;
 
         // Each Residual block takes a point and a camera as input

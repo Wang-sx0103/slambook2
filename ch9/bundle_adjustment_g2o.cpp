@@ -14,11 +14,13 @@ using namespace Eigen;
 using namespace std;
 
 /// 姿态和内参的结构
-struct PoseAndIntrinsics {
+struct PoseAndIntrinsics
+{
     PoseAndIntrinsics() {}
 
     /// set from given data address
-    explicit PoseAndIntrinsics(double *data_addr) {
+    explicit PoseAndIntrinsics(double *data_addr)
+    {
         rotation = SO3d::exp(Vector3d(data_addr[0], data_addr[1], data_addr[2]));
         translation = Vector3d(data_addr[3], data_addr[4], data_addr[5]);
         focal = data_addr[6];
@@ -27,7 +29,8 @@ struct PoseAndIntrinsics {
     }
 
     /// 将估计值放入内存
-    void set_to(double *data_addr) {
+    void set_to(double *data_addr)
+    {
         auto r = rotation.log();
         for (int i = 0; i < 3; ++i) data_addr[i] = r[i];
         for (int i = 0; i < 3; ++i) data_addr[i + 3] = translation[i];
@@ -43,17 +46,20 @@ struct PoseAndIntrinsics {
 };
 
 /// 位姿加相机内参的顶点，9维，前三维为so3，接下去为t, f, k1, k2
-class VertexPoseAndIntrinsics : public g2o::BaseVertex<9, PoseAndIntrinsics> {
+class VertexPoseAndIntrinsics: public g2o::BaseVertex<9, PoseAndIntrinsics>
+{
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
     VertexPoseAndIntrinsics() {}
 
-    virtual void setToOriginImpl() override {
+    virtual void setToOriginImpl() override
+    {
         _estimate = PoseAndIntrinsics();
     }
 
-    virtual void oplusImpl(const double *update) override {
+    virtual void oplusImpl(const double *update) override
+    {
         _estimate.rotation = SO3d::exp(Vector3d(update[0], update[1], update[2])) * _estimate.rotation;
         _estimate.translation += Vector3d(update[3], update[4], update[5]);
         _estimate.focal += update[6];
@@ -62,7 +68,8 @@ public:
     }
 
     /// 根据估计值投影一个点
-    Vector2d project(const Vector3d &point) {
+    Vector2d project(const Vector3d &point)
+    {
         Vector3d pc = _estimate.rotation * point + _estimate.translation;
         pc = -pc / pc[2];
         double r2 = pc.squaredNorm();
@@ -76,17 +83,20 @@ public:
     virtual bool write(ostream &out) const {}
 };
 
-class VertexPoint : public g2o::BaseVertex<3, Vector3d> {
+class VertexPoint: public g2o::BaseVertex<3, Vector3d>
+{
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
     VertexPoint() {}
 
-    virtual void setToOriginImpl() override {
+    virtual void setToOriginImpl() override
+    {
         _estimate = Vector3d(0, 0, 0);
     }
 
-    virtual void oplusImpl(const double *update) override {
+    virtual void oplusImpl(const double *update) override
+    {
         _estimate += Vector3d(update[0], update[1], update[2]);
     }
 
@@ -95,12 +105,14 @@ public:
     virtual bool write(ostream &out) const {}
 };
 
-class EdgeProjection :
-    public g2o::BaseBinaryEdge<2, Vector2d, VertexPoseAndIntrinsics, VertexPoint> {
+class EdgeProjection:
+    public g2o::BaseBinaryEdge<2, Vector2d, VertexPoseAndIntrinsics, VertexPoint>
+{
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
-    virtual void computeError() override {
+    virtual void computeError() override
+    {
         auto v0 = (VertexPoseAndIntrinsics *) _vertices[0];
         auto v1 = (VertexPoint *) _vertices[1];
         auto proj = v0->project(v1->estimate());
@@ -116,9 +128,11 @@ public:
 
 void SolveBA(BALProblem &bal_problem);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 
-    if (argc != 2) {
+    if (argc != 2)
+    {
         cout << "usage: bundle_adjustment_g2o bal_data.txt" << endl;
         return 1;
     }
@@ -133,7 +147,8 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-void SolveBA(BALProblem &bal_problem) {
+void SolveBA(BALProblem &bal_problem)
+{
     const int point_block_size = bal_problem.point_block_size();
     const int camera_block_size = bal_problem.camera_block_size();
     double *points = bal_problem.mutable_points();
@@ -154,7 +169,8 @@ void SolveBA(BALProblem &bal_problem) {
     // vertex
     vector<VertexPoseAndIntrinsics *> vertex_pose_intrinsics;
     vector<VertexPoint *> vertex_points;
-    for (int i = 0; i < bal_problem.num_cameras(); ++i) {
+    for (int i = 0; i < bal_problem.num_cameras(); ++i)
+    {
         VertexPoseAndIntrinsics *v = new VertexPoseAndIntrinsics();
         double *camera = cameras + camera_block_size * i;
         v->setId(i);
@@ -162,7 +178,8 @@ void SolveBA(BALProblem &bal_problem) {
         optimizer.addVertex(v);
         vertex_pose_intrinsics.push_back(v);
     }
-    for (int i = 0; i < bal_problem.num_points(); ++i) {
+    for (int i = 0; i < bal_problem.num_points(); ++i)
+    {
         VertexPoint *v = new VertexPoint();
         double *point = points + point_block_size * i;
         v->setId(i + bal_problem.num_cameras());
@@ -174,7 +191,8 @@ void SolveBA(BALProblem &bal_problem) {
     }
 
     // edge
-    for (int i = 0; i < bal_problem.num_observations(); ++i) {
+    for (int i = 0; i < bal_problem.num_observations(); ++i)
+    {
         EdgeProjection *edge = new EdgeProjection;
         edge->setVertex(0, vertex_pose_intrinsics[bal_problem.camera_index()[i]]);
         edge->setVertex(1, vertex_points[bal_problem.point_index()[i]]);
@@ -188,13 +206,15 @@ void SolveBA(BALProblem &bal_problem) {
     optimizer.optimize(40);
 
     // set to bal problem
-    for (int i = 0; i < bal_problem.num_cameras(); ++i) {
+    for (int i = 0; i < bal_problem.num_cameras(); ++i)
+    {
         double *camera = cameras + camera_block_size * i;
         auto vertex = vertex_pose_intrinsics[i];
         auto estimate = vertex->estimate();
         estimate.set_to(camera);
     }
-    for (int i = 0; i < bal_problem.num_points(); ++i) {
+    for (int i = 0; i < bal_problem.num_points(); ++i)
+    {
         double *point = points + point_block_size * i;
         auto vertex = vertex_points[i];
         for (int k = 0; k < 3; ++k) point[k] = vertex->estimate()[k];
