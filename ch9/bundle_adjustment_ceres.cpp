@@ -10,7 +10,8 @@ void SolveBA(BALProblem &bal_problem);
 
 int main(int argc, char **argv)
 {
-    if (argc != 2) {
+    if (argc != 2)
+    {
         cout << "usage: bundle_adjustment_ceres bal_data.txt" << endl;
         return 1;
     }
@@ -25,7 +26,8 @@ int main(int argc, char **argv)
     return 0;
 }
 
-void SolveBA(BALProblem &bal_problem) {
+void SolveBA(BALProblem &bal_problem)
+{
     const int point_block_size = bal_problem.point_block_size();
     const int camera_block_size = bal_problem.camera_block_size();
     double *points = bal_problem.mutable_points();

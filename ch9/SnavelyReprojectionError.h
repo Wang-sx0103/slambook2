@@ -5,7 +5,8 @@
 #include "ceres/ceres.h"
 #include "rotation.h"
 
-class SnavelyReprojectionError {
+class SnavelyReprojectionError
+{
 public:
     SnavelyReprojectionError(double observation_x, double observation_y) : observed_x(observation_x),
                                                                            observed_y(observation_y) {}
@@ -68,4 +69,3 @@ private:
 };
 
 #endif // SnavelyReprojection.h
-
