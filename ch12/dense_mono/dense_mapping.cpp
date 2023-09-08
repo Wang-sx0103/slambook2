@@ -4,8 +4,8 @@
 
 using namespace std;
 
-#include <boost/timer.hpp>
-
+// #include <boost/timer.hpp>
+#include <boost/timer/timer.hpp> 
 // for sophus
 #include <sophus/se3.hpp>
 
@@ -190,7 +190,7 @@ int main(int argc, char **argv) {
     }
     cout << "read total " << color_image_files.size() << " files." << endl;
 
-    // 第一张图
+    // 第一张图 scene_000.png
     Mat ref = imread(color_image_files[0], 0);                // gray-scale image
     SE3d pose_ref_TWC = poses_TWC[0];
     double init_depth = 3.0;    // 深度初始值
@@ -286,6 +286,7 @@ bool update(const Mat &ref, const Mat &curr, const SE3d &T_C_R, Mat &depth, Mat 
             // 匹配成功，更新深度图
             updateDepthFilter(Vector2d(x, y), pt_curr, T_C_R, epipolar_direction, depth, depth_cov2);
         }
+    return true;
 }
 
 // 极线搜索

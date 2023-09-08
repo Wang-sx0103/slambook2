@@ -15,8 +15,9 @@ find_package(Sophus REQUIRED)
 include_directories(${Sophus_INCLUDE_DIRS})
 
 set(THIRD_PARTY_LIBS
-        ${OpenCV_LIBS}
-        ${Sophus_LIBRARIES})
+    ${OpenCV_LIBS}
+    ${Sophus_LIBRARIES}
+)
 
 add_executable(dense_mapping dense_mapping.cpp)
 target_link_libraries(dense_mapping ${THIRD_PARTY_LIBS})
